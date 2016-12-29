@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -32,8 +33,10 @@ import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.DateFormat;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 
 
 import java.lang.ref.WeakReference;
@@ -183,16 +186,31 @@ public class UnixWatch extends CanvasWatchFaceService {
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
 
-            // Load resources that have alternate values for round watches.
+            // Adjust layout for round watches
             Resources resources = UnixWatch.this.getResources();
             boolean isRound = insets.isRound();
-            mXOffset = resources.getDimension(isRound
-                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
-            float textSize = resources.getDimension(isRound
-                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
+            mXOffset = resources.getDimension(isRound ?
+                    R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
 
+            // Set text size
+            float textSize = resources.getDimension(R.dimen.digital_text_size);
             mPromptPaint.setTextSize(textSize);
             mTextPaint.setTextSize(textSize);
+
+            // Horizontally scale text if necessary
+            WindowManager wm = (WindowManager) getApplicationContext()
+                    .getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            float textWidth = mPromptPaint.measureText("$ date ----------");
+            if (textWidth > width) {
+                float scaleRatio = (width - resources.getDimension(R.dimen.digital_x_offset_round)
+                        * 2) / textWidth;
+                mPromptPaint.setTextScaleX(scaleRatio);
+                mTextPaint.setTextScaleX(scaleRatio);
+            }
         }
 
         @Override
