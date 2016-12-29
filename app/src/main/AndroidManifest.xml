@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.phpizza.unixwatch">
 
-    <uses-feature android:name="android.hardware.type.watch" />
+    <!-- Allow installing on non-watch hardware -->
+    <uses-feature android:name="android.hardware.type.watch" android:required="false" />
 
     <!-- Required to act as a custom watch face. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
